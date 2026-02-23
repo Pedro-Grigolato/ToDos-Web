@@ -1,2 +1,5 @@
-# ToDos-Web
-Projeto de aplicação web com .Net, para gerenciamento de tarefas por usuário
+Passo 1: 
+Instalação das bibliotecas
+
+Passo 2:
+Criar as camadas de dados (models)
