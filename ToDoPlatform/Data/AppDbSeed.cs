@@ -32,7 +32,7 @@ public class AppDbSeed
             {
                 new AppUser()
                 {
-                    Id = "",
+                    Id = "9922eecd-404d-4b8e-88a6-6e61247f3a3c",
                     Email = "pedroantunes480@gmail.com",
                     NormalizedEmail = "PEDROANTUNES480@GMAIL.COM",
                     UserName = "pedroantunes480@gmail.com",
@@ -42,14 +42,15 @@ public class AppDbSeed
                     Name = "Pedro Henrique Antunes",
                     ProfilePicture = "https://wallpapers.com/images/featured-full/foto-de-perfil-legal-2we7xmn0737hqgtu.jpg"
 
-                    }
-                };
+                }
+            };
 
         foreach (var user in users)
         {
             PasswordHasher<IdentityUser> pass = new();
             user.PasswordHash = pass.HashPassword(user, "123456");
         }
+        builder.Entity<AppUser>().HasData(users);
         #endregion
 
         #region Popular Dados de Uduário Perfil
@@ -59,12 +60,7 @@ public class AppDbSeed
             {
                 UserId = users[0].Id,
                 RoleId = roles[0].Id
-            },
-            new IdentityUserRole<string>()
-            {
-                UserId = users[1].Id,
-                RoleId = roles[1].Id
-            },
+            }
         };
         builder.Entity<IdentityUserRole<string>>().HasData(userRoles);
         #endregion
@@ -84,7 +80,7 @@ public class AppDbSeed
                 Id = 2,
                 Title = "Estudar português",
                 Description = "Introdução a literatura clássica",
-                UserId = users[1].Id
+                UserId = users[0].Id
             },
 
               new ToDo()
@@ -92,10 +88,10 @@ public class AppDbSeed
                 Id = 3,
                 Title = "Estudar biologia",
                 Description = "Teoria da evolução (Darwin)",
-                UserId = users[2].Id
+                UserId = users[0].Id
             },
         };
-
+        builder.Entity<ToDo>().HasData(toDos);
         #endregion
     }
 }

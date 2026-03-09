@@ -15,7 +15,7 @@ namespace ToDoPlatform.Models;
         public string UserId { get; set; }
 
         [ForeignKey(nameof(UserId))]
-         [Display(Name = "Usuário")]
+        [Display(Name = "Usuário")]
         public AppUser User { get; set; }
 
         [StringLength(100)]

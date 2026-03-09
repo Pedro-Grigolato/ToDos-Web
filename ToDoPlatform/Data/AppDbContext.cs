@@ -19,6 +19,8 @@ namespace ToDoPlatform.Data;
     {
         base.OnModelCreating(builder);
 
+        AppDbSeed appDbSeed = new(builder);
+
         #region Configuração das tabelas do Identity
         builder.Entity<AppUser>().ToTable("users");
         builder.Entity<IdentityRole>().ToTable("roles");
