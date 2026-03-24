@@ -6,91 +6,95 @@ namespace ToDoPlatform.Data;
 
 public class AppDbSeed
 {
-    // ctor - construção
     public AppDbSeed(ModelBuilder builder)
     {
-        #region Popular dados de Perfil do usuário
+        #region ROLES
         List<IdentityRole> roles = new()
         {
             new IdentityRole()
             {
-                Id = "91d71587-4500-4a21-bd21-0f5cc725ad2e",
+                Id = "ROLE_ADMIN_ID",
                 Name = "Administrador",
                 NormalizedName = "ADMINISTRADOR"
             },
             new IdentityRole()
             {
-                Id = "9922eecd-404d-4b8e-88a6-6e61247f3a3c",
-                Name = "Usuário",
-                NormalizedName = "USUÁRIO"
-            },
+                Id = "ROLE_USER_ID",
+                Name = "Usuario",
+                NormalizedName = "USUARIO"
+            }
         };
+
         builder.Entity<IdentityRole>().HasData(roles);
         #endregion
-        #region Popular dados de Usuário
-        List<AppUser> users = new()
-            {
-                new AppUser()
-                {
-                    Id = "9922eecd-404d-4b8e-88a6-6e61247f3a3c",
-                    Email = "pedroantunes480@gmail.com",
-                    NormalizedEmail = "PEDROANTUNES480@GMAIL.COM",
-                    UserName = "pedroantunes480@gmail.com",
-                    NormalizedUserName = "PEDROANTUNES480@gmail.com",
-                    LockoutEnabled = false,
-                    EmailConfirmed = true,
-                    Name = "Pedro Henrique Antunes",
-                    ProfilePicture = "https://wallpapers.com/images/featured-full/foto-de-perfil-legal-2we7xmn0737hqgtu.jpg"
 
-                }
-            };
+        #region USERS
+        List<AppUser> users = new()
+        {
+            new AppUser()
+            {
+                Id = "USER_PEDRO_ID",
+                Name = "Pedro Henrique Antunes",
+                UserName = "pedroantunes480@gmail.com",
+                NormalizedUserName = "PEDROANTUNES480@GMAIL.COM",
+                Email = "pedroantunes480@gmail.com",
+                NormalizedEmail = "PEDROANTUNES480@GMAIL.COM",
+                EmailConfirmed = true,
+                LockoutEnabled = false,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                ProfilePicture = "https://wallpapers.com/images/featured-full/foto-de-perfil-legal-2we7xmn0737hqgtu.jpg"
+            }
+        };
+
+        var hasher = new PasswordHasher<AppUser>();
 
         foreach (var user in users)
         {
-            PasswordHasher<IdentityUser> pass = new();
-            user.PasswordHash = pass.HashPassword(user, "123456");
+            user.PasswordHash = hasher.HashPassword(user, "123456");
         }
+
         builder.Entity<AppUser>().HasData(users);
         #endregion
 
-        #region Popular Dados de Uduário Perfil
+        #region USER ROLES
         List<IdentityUserRole<string>> userRoles = new()
         {
             new IdentityUserRole<string>()
             {
-                UserId = users[0].Id,
-                RoleId = roles[0].Id
+                UserId = "USER_PEDRO_ID",
+                RoleId = "ROLE_ADMIN_ID"
             }
         };
+
         builder.Entity<IdentityUserRole<string>>().HasData(userRoles);
         #endregion
 
-        #region Popular as Tarefas do usuário
+        #region TODOS
         List<ToDo> toDos = new()
         {
             new ToDo()
             {
                 Id = 1,
-                Title = "Estudar para matemática",
-                Description = "Introdução a matemática básica",
-                UserId = users[0].Id
+                Title = "Estudar matemática",
+                Description = "Introdução à matemática básica",
+                UserId = "USER_PEDRO_ID"
             },
             new ToDo()
             {
                 Id = 2,
                 Title = "Estudar português",
-                Description = "Introdução a literatura clássica",
-                UserId = users[0].Id
+                Description = "Literatura clássica",
+                UserId = "USER_PEDRO_ID"
             },
-
-              new ToDo()
+            new ToDo()
             {
                 Id = 3,
                 Title = "Estudar biologia",
-                Description = "Teoria da evolução (Darwin)",
-                UserId = users[0].Id
-            },
+                Description = "Teoria da evolução",
+                UserId = "USER_PEDRO_ID"
+            }
         };
+
         builder.Entity<ToDo>().HasData(toDos);
         #endregion
     }

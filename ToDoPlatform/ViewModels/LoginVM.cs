@@ -12,8 +12,9 @@ public class LoginVM
     public string Email { get; set; }
 
     [DataType(DataType.Password)]
-    [Display(Name = "Senha", Prompt = "********")]
     [Required(ErrorMessage = "A senha de acesso é obrigatória!")]
+    [Display(Name = "Senha", Prompt = "********")]
+    
     public string Password { get; set; }
 
     [Display(Name = "Manter Conectado?")]

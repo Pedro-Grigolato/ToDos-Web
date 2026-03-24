@@ -2,13 +2,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ToDoPlatform.Data;
 using ToDoPlatform.Models;
-using ToDoPlatform.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add servises to the container.
 // Servico de conexão com banco de dados
-string conexao = builder .Configuration.GetConnectionString("Conexao");
+string conexao = builder.Configuration.GetConnectionString("Conexao");
 builder.Services.AddDbContext<AppDbContext>(
     options => options.UseMySQL(conexao)
 );
@@ -26,12 +25,10 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(
 
 builder.Services.AddControllersWithViews(); 
 
-builder.Services.AddTransient<IUserService, UserService>();
-
 var app = builder.Build();
 
 //Garante a existéncia do banco
-using (var scope = app.Services.CreateAsyncScope())
+using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await dbContext.Database.EnsureCreatedAsync();

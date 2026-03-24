@@ -5,23 +5,19 @@ using ToDoPlatform.Models;
 
 namespace ToDoPlatform.Data;
 
-    public class AppDbContext : IdentityDbContext<AppUser>
+public class AppDbContext : IdentityDbContext<AppUser>
+{
+    public AppDbContext(DbContextOptions<AppDbContext> opt) : base(opt)
     {
-        
-        public AppDbContext(DbContextOptions<AppDbContext> opt): base(opt)
-        {
-        }
+    }
 
-        public DbSet<AppUser> AppUsers {get; set; }
-        public DbSet<ToDo> ToDos { get; set; }
+    public DbSet<ToDo> ToDos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
-        AppDbSeed appDbSeed = new(builder);
-
-        #region Configuração das tabelas do Identity
+        #region CONFIGURAÇÃO IDENTITY
         builder.Entity<AppUser>().ToTable("users");
         builder.Entity<IdentityRole>().ToTable("roles");
         builder.Entity<IdentityUserRole<string>>().ToTable("user_roles");
@@ -30,5 +26,8 @@ namespace ToDoPlatform.Data;
         builder.Entity<IdentityUserLogin<string>>().ToTable("user_logins");
         builder.Entity<IdentityRoleClaim<string>>().ToTable("role_claims");
         #endregion
+
+        // SEED POR ÚLTIMO
+        new AppDbSeed(builder);
     }
-    }
+}
