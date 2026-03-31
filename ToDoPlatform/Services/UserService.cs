@@ -1,57 +1,105 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
-using ToDoPlatform.Helpers;
 using ToDoPlatform.Models;
+using Microsoft.AspNetCore.Identity;
 using ToDoPlatform.ViewModels;
+using System.Security.Claims;
+using ToDoPlatform.Data;
+using Microsoft.EntityFrameworkCore;
+using ToDoPlatform.Helpers;
 
 namespace ToDoPlatform.Services;
 
 public class UserService : IUserService
 {
     private readonly SignInManager<AppUser> _signInManager;
-    private UserManager<AppUser> _useManager;
+    private readonly UserManager<AppUser> _userManager;
     private readonly ILogger<UserService> _logger;
+    private readonly AppDbContext _dbContext;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public UserService(
+        AppDbContext dbContext,
+        IHttpContextAccessor httpContextAccessor,
         SignInManager<AppUser> signInManager,
         UserManager<AppUser> userManager,
-        ILogger<UserService> logger
-    )
+        ILogger<UserService> logger)
     {
+        _dbContext = dbContext;
+        _httpContextAccessor = httpContextAccessor;
         _signInManager = signInManager;
-        _useManager = userManager;
+        _userManager = userManager;
         _logger = logger;
+    }
+
+    public async Task<UserVM> GetLoggedUser()
+    {
+        var userId = _httpContextAccessor.HttpContext?.User
+            .FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (userId == null)
+            return null;
+
+        var user = await _dbContext.Users
+            .SingleOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null)
+            return null;
+
+        var roles = await _userManager.GetRolesAsync(user);
+        var rolesString = string.Join(", ", roles);
+
+        var isAdmin = await _userManager.IsInRoleAsync(user, "Administrador");
+
+        return new UserVM
+        {
+            Id = user.Id,
+            Name = user.Name,
+            ProfilePicture = user.ProfilePicture,
+            Email = user.Email,
+            UserName = user.UserName,
+            Roles = rolesString,
+            IsAdmin = isAdmin
+        };
     }
 
     public async Task<SignInResult> Login(LoginVM login)
     {
         string userName = login.Email;
+
         if (Helper.IsValidEmail(login.Email))
         {
-            var user = await _useManager.FindByEmailAsync(login.Email);
+            var user = await _userManager.FindByEmailAsync(login.Email);
             if (user != null)
                 userName = user.UserName;
         }
 
         var result = await _signInManager.PasswordSignInAsync(
-            userName, login.Password, login.RememberMe, lockoutOnFailure: true
+            userName,
+            login.Password,
+            login.RememberMe,
+            lockoutOnFailure: true
         );
 
         if (result.Succeeded)
-        _logger.LogInformation($"Usuário '{userName}' acessou o sistema");
+            _logger.LogInformation($"Usuário '{userName}' acessou o sistema");
 
         if (result.IsLockedOut)
-        _logger.LogWarning($"Usuário '{userName}' está bloqueado");
+            _logger.LogWarning($"Usuário '{userName}' está bloqueado");
 
         if (result.IsNotAllowed)
-        _logger.LogWarning($" O Usuário '{userName}' está tentando acessar uma área restrita");
+            _logger.LogWarning($"Usuário '{userName}' não tem permissão para acessar");
 
         return result;
     }
 
     public async Task Logout()
     {
-        _logger.LogInformation($"Usuário '{ClaimTypes.Email}' saiu do sistema");
+        var userEmail = _httpContextAccessor.HttpContext?.User
+            .FindFirstValue(ClaimTypes.Email);
+
+        _logger.LogInformation($"Usuário '{userEmail}' saiu do sistema");
+
         await _signInManager.SignOutAsync();
     }
 }
+
+// pagina 33 - arrumar erros
