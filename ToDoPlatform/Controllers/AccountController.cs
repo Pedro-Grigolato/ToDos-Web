@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 using ToDoPlatform.Services;
 using ToDoPlatform.ViewModels;
@@ -18,19 +13,21 @@ namespace ToDoPlatform.Controllers
 
         public AccountController(
             ILogger<AccountController> logger,
-             IUserService userService
+            IUserService userService
         )
         {
             _logger = logger;
             _userService = userService;
         }
 
+        [HttpGet]
         public IActionResult Login(string returnUrl = null)
         {
+            // Redireciona usuário já logado
             if (User.Identity.IsAuthenticated)
                 return RedirectToAction("Index", "Home");
 
-                var model = new LoginVM
+            var model = new LoginVM
             {
                 ReturnUrl = returnUrl ?? Url.Content("~/")
             };
@@ -39,36 +36,46 @@ namespace ToDoPlatform.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-
         public async Task<IActionResult> Login(LoginVM login)
         {
-            if (ModelState.IsValid) 
+            if (ModelState.IsValid)
             {
+                var result = await _userService.Login(login);
 
-            var result = await _userService.Login(login);
+                if (result.Succeeded)
+                    return LocalRedirect(login.ReturnUrl);
 
-            if (result.Succeeded) 
-                return LocalRedirect(login.ReturnUrl);
-            if (result.IsLockedOut) 
-                return RedirectToAction ("Lockout");
-            if(result.IsNotAllowed) 
-                return RedirectToAction ("AcessDenied");
-            ModelState.TryAddModelError("", "Usuário e/ou senha inválidos!");
-            }  
+                if (result.IsLockedOut)
+                    return RedirectToAction("Lockout");
+
+                if (result.IsNotAllowed)
+                    return RedirectToAction("AccessDenied");
+
+                // Mensagem de erro padrão
+                ModelState.TryAddModelError("", "Usuário e/ou senha inválidos!");
+            }
+
+            // Retorna a view com erros
             return View(login);
         }
-          public IActionResult Logout()
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
         {
+            // Chama o serviço para efetuar logout
+            await _userService.Logout();
             return RedirectToAction("Login");
         }
 
-
-          public IActionResult Register()
+        [HttpGet]
+        public IActionResult Register()
         {
             return View();
         }
 
-          public IActionResult Profile()
+        [HttpGet]
+        public IActionResult Profile()
         {
             return View();
         }
@@ -76,7 +83,7 @@ namespace ToDoPlatform.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View("Error!");
+            return View("Error");
         }
     }
 }

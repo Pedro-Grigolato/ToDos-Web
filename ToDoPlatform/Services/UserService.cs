@@ -13,17 +13,14 @@ public class UserService : IUserService
     private readonly SignInManager<AppUser> _signInManager;
     private readonly UserManager<AppUser> _userManager;
     private readonly ILogger<UserService> _logger;
-    private readonly AppDbContext _dbContext;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public UserService(
-        AppDbContext dbContext,
         IHttpContextAccessor httpContextAccessor,
         SignInManager<AppUser> signInManager,
         UserManager<AppUser> userManager,
         ILogger<UserService> logger)
     {
-        _dbContext = dbContext;
         _httpContextAccessor = httpContextAccessor;
         _signInManager = signInManager;
         _userManager = userManager;
@@ -32,14 +29,18 @@ public class UserService : IUserService
 
     public async Task<UserVM> GetLoggedUser()
     {
-        var userId = _httpContextAccessor.HttpContext?.User
-            .FindFirstValue(ClaimTypes.NameIdentifier);
+        var httpContext = _httpContextAccessor.HttpContext;
 
-        if (userId == null)
+        if (httpContext == null || httpContext.User == null)
             return null;
 
-        var user = await _dbContext.Users
-            .SingleOrDefaultAsync(u => u.Id == userId);
+        var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userId))
+            return null;
+
+        // ✅ usando UserManager (melhor prática)
+        var user = await _userManager.FindByIdAsync(userId);
 
         if (user == null)
             return null;
@@ -65,6 +66,7 @@ public class UserService : IUserService
     {
         string userName = login.Email;
 
+        // ✅ valida se é email antes de buscar
         if (Helper.IsValidEmail(login.Email))
         {
             var user = await _userManager.FindByEmailAsync(login.Email);
@@ -101,5 +103,3 @@ public class UserService : IUserService
         await _signInManager.SignOutAsync();
     }
 }
-
-// pagina 33 - arrumar erros
