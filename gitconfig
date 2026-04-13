@@ -13,4 +13,4 @@ dotnet add package MySql.EntityFrameworkCore --version 10.0.1
 dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 10.0.3
 
 
-// página 40 finalizada --> começar a 42
+// começar a página 62

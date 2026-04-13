@@ -10,4 +10,3 @@ public class HomeVM
     public int EndedTasks { get; set; }
     public List<ToDo> ToDos { get; set; }
 }
-

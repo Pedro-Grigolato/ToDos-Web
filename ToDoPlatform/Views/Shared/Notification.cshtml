@@ -1,25 +1,37 @@
-<<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{{!-- Views/Shared/_Notification.cshtml --}}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-async function showMessage(type, text, time, url) {
-let timerCompleted = false;
-const result = await Swal.mixin({
-toast: true,
-position: "top-end",
-showConfirmButton: false,
-timer: time,
-timerProgressBar: true,
-didOpen: (toast) => {
-toast.onmouseenter = () => Swal.stopTimer();
-toast.onmouseleave = () => Swal.resumeTimer();
-toast.onmouseleave = () => { timerCompleted = false; };
-},
-willClose: () => { timerCompleted = true; }
-}).fire({
-icon: type ?? "success",
-title: text
-});
-if (timerCompleted && url) {
-window.location.href = url;
-}
-}
+    async function showMessage(type, text, time, url) {
+        let timerCompleted = false;
+
+        const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: time,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                // Pausa o timer quando o mouse está sobre o alerta
+                toast.onmouseenter = Swal.stopTimer;
+                // Resume o timer quando o mouse sai
+                toast.onmouseleave = Swal.resumeTimer;
+            },
+            willClose: () => {
+                // Define como verdadeiro apenas se o alerta fechar pelo tempo (ou naturalmente)
+                timerCompleted = true;
+            }
+        });
+
+        await Toast.fire({
+            icon: type ?? "success",
+            title: text
+        });
+
+        // Executa o redirecionamento se houver uma URL e o timer chegar ao fim
+        if (timerCompleted && url) {
+            window.location.href = url;
+        }
+    }
 </script>
